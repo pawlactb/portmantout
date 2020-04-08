@@ -15,14 +15,15 @@ class PortmantoutNode(Node):
         """
         return PortmantoutNode.syllables[word]
 
+    # TODO:
     @staticmethod
     def is_portmanteau(words):
         """Determine if a portmanteau can be made along words (in current order).
 
         :param words: words to see if portmanteau exists along
         :type words: [str]
-        :return: (True, portmanteau) iff portmanteau exists along words, (False, '') otherwise.
-        :rtype: (Boolean, str)
+        :return: True iff portmanteau exists along words, False otherwise.
+        :rtype: Boolean
         """
         if words is None:
             return True
@@ -33,8 +34,26 @@ class PortmantoutNode(Node):
 
         return False
 
+    # TODO:
+    @staticmethod
+    def generate_portmanteau(words):
+        """Generate a portmanteau from words (in order).
+
+         :return: The rendered portmanteaus.
+         :rtype: [str]
+         """
+        if not PortmantoutNode.is_portmanteau(words):
+            return False
+
+        # return a list of all ways words can be jumbled together as a portmanteau.
+        return ['']
+
     def __init__(self, *args, **kwargs):
+        self.portmanteau = ''
         Node.__init__(self, args, kwargs)
+
+    def __str__(self):
+        print("%s (%d words)" % (self.portmanteau, len(self.path)))
 
     # TODO:
     def is_valid(self):
