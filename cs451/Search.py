@@ -4,6 +4,19 @@ from .Node import expand_node
 
 
 def a_star(root, heuristic_fn, cost_fn, node_count_max=None):
+    """Perform A* search starting from the root Node.
+
+    :param root: Node to begin search.
+    :type root: Node
+    :param heuristic_fn: Function to estimate distance to goal.
+    :type heuristic_fn: function returning int.
+    :param cost_fn: function to calculate cost from root to current node.
+    :type cost_fn: function returning int.
+    :param node_count_max: Maximum number of nodes to examine, defaults to None
+    :type node_count_max: int, optional
+    :return: (First Node that satisfies goal_test(), # of nodes examined)
+    :rtype: (Node, int)
+    """
     fringe = PriorityQueue()
     fringe.put((cost_fn(root) + heuristic_fn(root), root))
     visited = []
@@ -60,6 +73,15 @@ def BFS(root, node_count_max=None):
 
 
 def DFS(root, node_count_max=None):
+    """Perform Depth-First Search starting at root.
+
+    :param root: Node to begin search upon
+    :type root: Node
+    :param node_count_max: maximum number of nodes to examine, defaults to None
+    :type node_count_max: int, optional
+    :return: (First Node that satisfies goal_test(), # of nodes examined)
+    :rtype: (Node, int)
+    """
     nodes_examined = 0
     fringe = LifoQueue()
 
