@@ -15,9 +15,25 @@ class PortmantoutNode(Node):
         """
         return PortmantoutNode.syllables[word]
 
-    def __init__(self, syllables, *args, **kwargs):
-        if syllables:
-            PortmantoutNode.syllables = syllables
+    @staticmethod
+    def is_portmanteau(words):
+        """Determine if a portmanteau can be made along words (in current order).
+
+        :param words: words to see if portmanteau exists along
+        :type words: [str]
+        :return: (True, portmanteau) iff portmanteau exists along words, (False, '') otherwise.
+        :rtype: (Boolean, str)
+        """
+        if words is None:
+            return True
+
+        last_word = ''
+        for word in words:
+            pass
+
+        return False
+
+    def __init__(self, *args, **kwargs):
         Node.__init__(self, args, kwargs)
 
     # TODO:

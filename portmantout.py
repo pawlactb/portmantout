@@ -1,4 +1,6 @@
 from cs451.Node import Node
+from cs451.Search import BFS
+from PortmantoutNode import PortmantoutNode
 import re
 
 
@@ -29,18 +31,17 @@ def main():
     words = []
     word_file = '/usr/share/dict/american-english'
 
-    # read words, ignore possessives
+    # read words, ignore words with ' (possessives)
     read_word_list(word_file, words, ignoreRegExp=r""".*["'].*""")
     syllables = {}
     for word in words:
         append_word_to_syllable_dict(word, syllables)
 
-    for key, val in syllables.items():
-        print("%s: %s" % (key, str(val)))
-    # pick random word
-    # generate table of portmanteaus to go from letter-to-letter
-    # join words with easiest to manufacture letter-to-letter startings/endings
-    pass
+    root_node = PortmantoutNode(state='', name='root')
+    goal_node, nodes_examined = BFS(root_node, node_count_max=10)
+
+    print("Found Solution: %s (%s), after examining %d nodes." %
+          (str(goal_node), str(goal_node.path), nodes_examined))
 
 
 if __name__ == "__main__":

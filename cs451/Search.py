@@ -31,6 +31,15 @@ def a_star(root, heuristic_fn, cost_fn, node_count_max=None):
 
 
 def BFS(root, node_count_max=None):
+    """Perform Breadth-First Search starting from root.
+
+    :param root: Root Node to start BFS on.
+    :type root: Node
+    :param node_count_max: Maximum # of nodes to examine, defaults to None
+    :type node_count_max: int, optional
+    :return: First goal node found, and total number of nodes examined.
+    :rtype: (Node, int)
+    """
     nodes_examined = 0
     fringe = Queue()
 
