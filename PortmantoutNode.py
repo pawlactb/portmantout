@@ -53,7 +53,7 @@ class PortmantoutNode(Node):
         Node.__init__(self, args, kwargs)
 
     def __str__(self):
-        print("%s (%d words)" % (self.portmanteau, len(self.path)))
+        return "%s (%d words)" % (self.portmanteau, len(self.path))
 
     # TODO:
     def is_valid(self):

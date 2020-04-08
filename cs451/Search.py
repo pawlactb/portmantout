@@ -1,6 +1,6 @@
 from queue import PriorityQueue, Queue, LifoQueue
 
-from Node import expand_node
+from .Node import expand_node
 
 
 def a_star(root, heuristic_fn, cost_fn, node_count_max=None):
