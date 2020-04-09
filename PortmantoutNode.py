@@ -15,7 +15,7 @@ class PortmantoutNode(Node):
         """
         return PortmantoutNode.syllables[word]
 
-    # TODO:
+    # TODO: TP
     @staticmethod
     def is_portmanteau(words):
         """Determine if a portmanteau can be made along words (in current order).
@@ -34,7 +34,7 @@ class PortmantoutNode(Node):
 
         return False
 
-    # TODO:
+    # TODO: AD
     @staticmethod
     def generate_portmanteau(words):
         """Generate a portmanteau from words (in order).
@@ -64,7 +64,7 @@ class PortmantoutNode(Node):
         """
         return PortmantoutNode.is_portmanteau(self.path)
 
-    # TODO:
+    # TODO: RH
     def is_complete(self):
         """Check if node is at a terminal depth in search.
 
@@ -74,7 +74,7 @@ class PortmantoutNode(Node):
 
         return False
 
-    # TODO:
+    # TODO: RH
     def goal_test(self):
         """Check if the node met the goal requirements.
 
@@ -83,9 +83,11 @@ class PortmantoutNode(Node):
         """
         if not self.is_complete():
             return False
+
+        # Change this:
         return False
 
-    # TODO:
+    # TODO: AD
     def successors(self):
         """This function should return a list of PortmantoutNode s each with one of the remaining words appended to the successor's path.
 
