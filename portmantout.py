@@ -44,8 +44,8 @@ def append_word_to_syllables(word, dict):
 
 def load_syllables(path):
     # read words, ignore words with ' (possessives)
-    #words = read_word_list(path, ignoreRegExp=r""".*["'].*""")
-    words = read_word_list_no_proper_nouns(path, ignoreRegExp=r""".*["'].*""")
+    words = read_word_list(path, ignoreRegExp=r""".*["'].*""")
+    #words = read_word_list_no_proper_nouns(path, ignoreRegExp=r""".*["'].*""")
     syllables = {}
     for word in words:
         append_word_to_syllables(word, syllables)
