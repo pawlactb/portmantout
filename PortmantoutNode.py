@@ -55,7 +55,6 @@ class PortmantoutNode(Node):
     def __str__(self):
         return "%s (%d words)" % (self.portmanteau, len(self.path))
 
-    # TODO:
     def is_valid(self):
         """Check if a valid portmantaeu is made from the words in self.path.
         (Might only need to check most recent word added? Since we don't generate successors in invalid portmanteaus.)
@@ -63,7 +62,7 @@ class PortmantoutNode(Node):
         :return: True iff self.path can be a portmanteau, False otherwise.
         :rtype: Boolean
         """
-        return False
+        return PortmantoutNode.is_portmanteau(self.path)
 
     # TODO:
     def is_complete(self):
@@ -72,6 +71,7 @@ class PortmantoutNode(Node):
         :return: True iff node is at terminal depth.
         :rtype: Boolean
         """
+
         return False
 
     # TODO:
