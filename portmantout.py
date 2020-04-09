@@ -16,6 +16,19 @@ def read_word_list(path, ignoreRegExp=None):
     print("Successfully Loaded %d words." % (len(words)))
     return words
 
+def read_word_list_no_proper_nouns(path, ignoreRegExp=None):
+    words = []
+    f = open(path, r"r")
+    print("Opened: %s" % (str(path)))
+    for line in iter(f.readlines()):
+        if ignoreRegExp is not None:
+            if re.match(ignoreRegExp, line):
+                continue
+        if line[0].isupper():
+            continue
+        words.append(line.strip())
+    print("Successfully Loaded %d words." % (len(words)))
+    return words
 
 def split_word_into_syllables(word):
     ret_val = []
@@ -32,6 +45,7 @@ def append_word_to_syllables(word, dict):
 def load_syllables(path):
     # read words, ignore words with ' (possessives)
     words = read_word_list(path, ignoreRegExp=r""".*["'].*""")
+    #words = read_word_list_no_proper_nouns(path, ignoreRegExp=r""".*["'].*""")
     syllables = {}
     for word in words:
         append_word_to_syllables(word, syllables)
