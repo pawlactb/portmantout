@@ -16,6 +16,7 @@ def read_word_list(path, ignoreRegExp=None):
     print("Successfully Loaded %d words." % (len(words)))
     return words
 
+
 def read_word_list_no_proper_nouns(path, ignoreRegExp=None):
     words = []
     f = open(path, r"r")
@@ -29,6 +30,7 @@ def read_word_list_no_proper_nouns(path, ignoreRegExp=None):
         words.append(line.strip())
     print("Successfully Loaded %d words." % (len(words)))
     return words
+
 
 def split_word_into_syllables(word):
     ret_val = []
@@ -53,7 +55,7 @@ def load_syllables(path):
 
 
 def main():
-    word_file = '/usr/share/dict/american-english'
+    word_file = './american-english'
     syllables = load_syllables(word_file)
 
     PortmantoutNode.syllables = syllables
