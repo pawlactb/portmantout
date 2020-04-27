@@ -1,4 +1,5 @@
 from cs451.Node import Node
+import re
 
 
 class PortmantoutNode(Node):
@@ -15,7 +16,6 @@ class PortmantoutNode(Node):
         """
         return PortmantoutNode.syllables[word]
 
-    # TODO: TP
     @staticmethod
     def is_portmanteau(words):
         """Determine if a portmanteau can be made along words (in current order).
@@ -26,15 +26,31 @@ class PortmantoutNode(Node):
         :rtype: Boolean
         """
         if words is None:
-            return True
+            return False
 
-        last_word = ''
+        added_syllables = []
+        last_word_syllables = None
         for word in words:
-            pass
+            if len(added_syllables) == 0:
+                # first iteration
+                added_syllables.append(PortmantoutNode.get_syllables(word))
+                last_word_syllables = PortmantoutNode.get_syllables(word)
+                continue
+            current_word_syllables = PortmantoutNode.get_syllables(word)
+            for syllable_num, syllable in enumerate(current_word_syllables):
+                print()
+                if syllable not in added_syllables[:-len(last_word_syllables)]:
+                    # there is no portmanteau along this path
+                    return False, None
+                else:
+                    # portmanteau exists between added_syllables and syllable
+                    added_syllables.append(
+                        current_word_syllables[:syllable_num])
+                    last_word_syllables = current_word_syllables[:syllable_num]
 
-        return False
+        # if we make it here, we had no issues adding all the words.
+        return True, added_syllables
 
-    # TODO: AD
     @staticmethod
     def generate_portmanteau(words):
         """Generate a portmanteau from words (in order).
@@ -42,18 +58,18 @@ class PortmantoutNode(Node):
          :return: The rendered portmanteaus.
          :rtype: [str]
          """
-        if not PortmantoutNode.is_portmanteau(words):
+        portmanteau = PortmantoutNode.is_portmanteau(words)
+        if not PortmantoutNode.is_portmanteau(words)[0]:
             return False
-
-        # return a list of all ways words can be jumbled together as a portmanteau.
-        return ['']
+        else:
+            return "".join(portmanteau[1])
 
     def __init__(self, *args, **kwargs):
         self.portmanteau = ''
         Node.__init__(self, args, kwargs)
 
     def __str__(self):
-        return "%s (%d words)" % (self.portmanteau, len(self.path))
+        return "%s (%d words)" % (PortmantoutNode.generate_portmanteau(self.path), len(self.path))
 
     def is_valid(self):
         """Check if a valid portmantaeu is made from the words in self.path.
@@ -103,3 +119,54 @@ class PortmantoutNode(Node):
         :rtype: int
         """
         return len(self.path)
+
+
+def read_word_list(path, ignoreRegExp=None):
+    words = []
+    f = open(path, r"r")
+    print("Opened: %s" % (str(path)))
+    for line in iter(f.readlines()):
+        if ignoreRegExp is not None:
+            if re.match(ignoreRegExp, line):
+                continue
+        words.append(line.strip())
+    print("Successfully Loaded %d words." % (len(words)))
+    return words
+
+
+def split_word_into_syllables(word):
+    ret_val = []
+    ex = r'[^aeiou]*[aeiou]*[^aeiou]*|[aeiou]*[^aeiou]'
+    # ex = r'([^aeiou]*[aeiou]*)|[aeiou]*[^aeiou]*[aeiou]*'
+    # ex = r"[aiouy]+e*|e(?!d$| ly). | [td]ed | le"
+    ret_val = list(re.findall(ex, word))
+    # ret_val.remove('')
+    return ret_val
+
+
+def append_word_to_syllables(word, dict):
+    dict[word] = split_word_into_syllables(word)
+
+
+def load_syllables(path):
+    # read words, ignore words with ' (possessives)
+    words = read_word_list(path, ignoreRegExp=r""".*["'].*""")
+    #words = read_word_list_no_proper_nouns(path, ignoreRegExp=r""".*["'].*""")
+    syllables = {}
+    for word in words:
+        append_word_to_syllables(
+            word, syllables)
+    return syllables
+
+
+if __name__ == "__main__":
+    word_file = './american-english'
+    syllables = load_syllables(word_file)
+
+    PortmantoutNode.syllables = syllables
+
+    words = ["Afrikaners", "Afrikaner", ]
+    for word in words:
+        print("Word: %s, syllables %s" %
+              (word, str(PortmantoutNode.get_syllables(word))))
+    print(PortmantoutNode.generate_portmanteau(words))
