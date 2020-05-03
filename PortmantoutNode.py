@@ -25,29 +25,35 @@ class PortmantoutNode(Node):
         :return: True iff portmanteau exists along words, False otherwise.
         :rtype: Boolean
         """
-        if words is None:
-            return False
-
         added_syllables = []
-        last_word_syllables = None
+        current_word_syllables = []
+        last_word_syllables = []
         for word in words:
-            if len(added_syllables) == 0:
+            if len(last_word_syllables) == 0:
                 # first iteration
-                added_syllables.append(PortmantoutNode.get_syllables(word))
-                last_word_syllables = PortmantoutNode.get_syllables(word)
+                last_word_syllables = PortmantoutNode.syllables[word]
                 continue
-            current_word_syllables = PortmantoutNode.get_syllables(word)
-            for syllable_num, syllable in enumerate(current_word_syllables):
-                print()
-                if syllable not in added_syllables[:-len(last_word_syllables)]:
-                    # there is no portmanteau along this path
+            else:
+                current_word_syllables = PortmantoutNode.syllables[word]
+
+                # syllables shared between last word and current word
+                syllables_shared = [
+                    x for x in current_word_syllables if x in last_word_syllables]
+                if len(syllables_shared) == 0:
+                    # if no syllables are shared, then we can say a portmanteau doesn't exist
                     return False, None
                 else:
-                    # portmanteau exists between added_syllables and syllable
-                    added_syllables.append(
-                        current_word_syllables[:syllable_num])
-                    last_word_syllables = current_word_syllables[:syllable_num]
-
+                    old_word_pos = last_word_syllables.index(
+                        syllables_shared[0]) + 1
+                    new_word_pos = current_word_syllables.index(
+                        syllables_shared[0]) + 1
+                    new_syllables = list()
+                    new_syllables.extend(last_word_syllables[0:old_word_pos])
+                    new_syllables.extend(
+                        current_word_syllables[new_word_pos:])
+                    added_syllables.extend(new_syllables)
+                    last_word_syllables = current_word_syllables[current_word_syllables.index(
+                        syllables_shared[0]):]
         # if we make it here, we had no issues adding all the words.
         return True, added_syllables
 
@@ -141,7 +147,7 @@ def split_word_into_syllables(word):
     # ex = r"[aiouy]+e*|e(?!d$| ly). | [td]ed | le"
     ret_val = list(re.findall(ex, word))
     # ret_val.remove('')
-    return ret_val
+    return list(filter(lambda x: x != '', ret_val))
 
 
 def append_word_to_syllables(word, dict):
@@ -165,8 +171,8 @@ if __name__ == "__main__":
 
     PortmantoutNode.syllables = syllables
 
-    words = ["Afrikaners", "Afrikaner", ]
+    words = ["Afrikaans", "Afrikaners", ]
     for word in words:
         print("Word: %s, syllables %s" %
               (word, str(PortmantoutNode.get_syllables(word))))
-    print(PortmantoutNode.generate_portmanteau(words))
+    print(PortmantoutNode.is_portmanteau(words))

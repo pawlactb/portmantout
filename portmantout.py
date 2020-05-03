@@ -17,25 +17,10 @@ def read_word_list(path, ignoreRegExp=None):
     return words
 
 
-def read_word_list_no_proper_nouns(path, ignoreRegExp=None):
-    words = []
-    f = open(path, r"r")
-    print("Opened: %s" % (str(path)))
-    for line in iter(f.readlines()):
-        if ignoreRegExp is not None:
-            if re.match(ignoreRegExp, line):
-                continue
-        if line[0].isupper():
-            continue
-        words.append(line.strip())
-    print("Successfully Loaded %d words." % (len(words)))
-    return words
-
-
 def split_word_into_syllables(word):
     ret_val = []
-    ex = r'([^aeiou]*[aeiou]*)|[aeiou]*[^aeiou]*[aeiou]*'
-    #ex = r'[^aeiou]*[aeiou]*[^aeiou]*|[aeiou]*[^aeiou]'
+    #ex = r'([^aeiou]*[aeiou]*)|[aeiou]*[^aeiou]*[aeiou]*'
+    ex = r'[^aeiou]*[aeiou]*[^aeiou]*|[aeiou]*[^aeiou]'
     ret_val = list(re.findall(ex, word))
     return ret_val
 
