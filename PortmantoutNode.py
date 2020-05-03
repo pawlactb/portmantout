@@ -163,16 +163,3 @@ def load_syllables(path):
         append_word_to_syllables(
             word, syllables)
     return syllables
-
-
-if __name__ == "__main__":
-    word_file = './american-english'
-    syllables = load_syllables(word_file)
-
-    PortmantoutNode.syllables = syllables
-
-    words = ["Afrikaans", "Afrikaners", ]
-    for word in words:
-        print("Word: %s, syllables %s" %
-              (word, str(PortmantoutNode.get_syllables(word))))
-    print(PortmantoutNode.is_portmanteau(words))
