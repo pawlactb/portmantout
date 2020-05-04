@@ -64,11 +64,27 @@ class PortmantoutNode(Node):
          :return: The rendered portmanteaus.
          :rtype: [str]
          """
-        portmanteau = PortmantoutNode.is_portmanteau(words)
-        if not PortmantoutNode.is_portmanteau(words)[0]:
-            return False
-        else:
-            return "".join(portmanteau[1])
+        # if not PortmantoutNode.is_portmanteau(words):
+        #     return []
+
+        rendered = []
+
+        # starting with one letter overlap
+        rendering = words[0]
+
+        for i in range(len(words)-1):
+            max_gap = min([len(words[i]),len(words[i+1])])
+
+            for gap in range(1,max_gap):
+
+                # if last letter of current word equals first
+                # letter of next word
+                if words[i][-gap:] == words[i+1][0:gap]:
+                    rendering += words[i+1][gap:]
+        if rendering != words[0]:
+            rendered.append(rendering)
+        # return a list of all ways words can be jumbled together as a portmanteau.
+        return rendered
 
     def __init__(self, *args, **kwargs):
         self.portmanteau = ''
@@ -116,7 +132,16 @@ class PortmantoutNode(Node):
             :return: If not self.valid(), returns [], else, returns a List of PortmantoutNodes (that may not be valid).
             :rtype: List
         """
-        return []
+        if not self.is_valid():
+            return []
+        kids = []
+        for word in words:
+            if not word in self.path:
+                kidPath = self.path
+                kidPath.append(word)
+                kids.append(PortmantoutNode(path=kidPath,parent=self))
+
+        return kids
 
     def cost(self):
         """Return the number of words added to the PortmantoutNode.
