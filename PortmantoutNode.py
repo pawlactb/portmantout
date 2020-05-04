@@ -1,6 +1,6 @@
 from cs451.Node import Node
 import re
-
+from copy import deepcopy
 
 class PortmantoutNode(Node):
     syllables = {}
@@ -15,6 +15,7 @@ class PortmantoutNode(Node):
         :rtype: [str]
         """
         return PortmantoutNode.syllables[word]
+
 
     @staticmethod
     def is_portmanteau(words):
@@ -32,6 +33,7 @@ class PortmantoutNode(Node):
             if len(last_word_syllables) == 0:
                 # first iteration
                 last_word_syllables = PortmantoutNode.syllables[word]
+                # added_syllables.extend(last_word_syllables)
                 continue
             else:
                 current_word_syllables = PortmantoutNode.syllables[word]
@@ -42,18 +44,26 @@ class PortmantoutNode(Node):
                 if len(syllables_shared) == 0:
                     # if no syllables are shared, then we can say a portmanteau doesn't exist
                     return False, None
-                else:
-                    old_word_pos = last_word_syllables.index(
-                        syllables_shared[0]) + 1
-                    new_word_pos = current_word_syllables.index(
-                        syllables_shared[0]) + 1
-                    new_syllables = list()
-                    new_syllables.extend(last_word_syllables[0:old_word_pos])
-                    new_syllables.extend(
-                        current_word_syllables[new_word_pos:])
-                    added_syllables.extend(new_syllables)
-                    last_word_syllables = current_word_syllables[current_word_syllables.index(
-                        syllables_shared[0]):]
+                
+                current_shared_index = current_word_syllables.index(syllables_shared[0])
+                last_shared_index = last_word_syllables.index(syllables_shared[0])
+                if current_shared_index == 0:
+                    return False, None
+                if last_shared_index == len(last_word_syllables)-1:
+                    return False, None
+
+
+                old_word_pos = last_word_syllables.index(
+                    syllables_shared[0]) + 1
+                new_word_pos = current_word_syllables.index(
+                    syllables_shared[0]) + 1
+                new_syllables = list()
+                new_syllables.extend(last_word_syllables[0:old_word_pos])
+                new_syllables.extend(
+                    current_word_syllables[new_word_pos:])
+                added_syllables.extend(new_syllables)
+                last_word_syllables = current_word_syllables[current_word_syllables.index(
+                    syllables_shared[0]):]
         # if we make it here, we had no issues adding all the words.
         return True, added_syllables
 
@@ -64,8 +74,9 @@ class PortmantoutNode(Node):
          :return: The rendered portmanteaus.
          :rtype: [str]
          """
-        if PortmantoutNode.is_portmanteau(words):
-            return "".join(words)
+        good, to_render = PortmantoutNode.is_portmanteau(words)
+        if good:
+            return "".join(to_render)
         else:
             return None
 
@@ -93,7 +104,11 @@ class PortmantoutNode(Node):
         Node.__init__(self, args, kwargs)
 
     def __str__(self):
-        return "%s (%d words)" % (PortmantoutNode.generate_portmanteau(self.path), len(self.path))
+        _, to_render = PortmantoutNode.is_portmanteau(self.path)
+        if _ == True:
+            return "%s (%d words) %s" % ("".join(to_render), len(self.path), str(self.path))
+        else:
+            return "BAD PORTMANTOUT (%d depth) " % (len(self.path))
 
     def is_valid(self):
         """Check if a valid portmantaeu is made from the words in self.path.
@@ -102,7 +117,7 @@ class PortmantoutNode(Node):
         :return: True iff self.path can be a portmanteau, False otherwise.
         :rtype: Boolean
         """
-        return PortmantoutNode.is_portmanteau(self.path)
+        return PortmantoutNode.is_portmanteau(self.path)[0]
 
     # TODO: RH
     def is_complete(self):
@@ -128,7 +143,7 @@ class PortmantoutNode(Node):
             return False
 
         # Change this:
-        if self.path.len()==1000 & is_portmanteau(self.path):
+        if self.path.len()==1000 and PortmantoutNode.is_portmanteau(self.path)[0]:
             return True
         else:
             return False
@@ -146,9 +161,12 @@ class PortmantoutNode(Node):
         kids = []
         for word in list(PortmantoutNode.syllables.keys()):
             if not word in self.path:
-                kidPath = self.path
+                kidPath = deepcopy(self.path)
                 kidPath.append(word)
-                kids.append(PortmantoutNode(path=kidPath,parent=self))
+                kid = PortmantoutNode(path=kidPath,parent=self)
+                kid.path = deepcopy(kidPath)
+                if PortmantoutNode.is_portmanteau(kidPath)[0]:
+                    kids.append(kid)
 
         return kids
 
@@ -159,7 +177,6 @@ class PortmantoutNode(Node):
         :rtype: int
         """
         return len(self.path)
-
 
 def read_word_list(path, ignoreRegExp=None):
     words = []

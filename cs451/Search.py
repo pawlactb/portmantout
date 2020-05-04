@@ -93,7 +93,8 @@ def DFS(root, node_count_max=None):
         node = fringe.get()
         nodes_examined += 1
         print("Examining Node #%d: %s" % (nodes_examined, node))
-        for child in node.children:
+        for child in node.successors():
+            node.register_child(child)
             fringe.put(child)
         if node.goal_test():
             return node, nodes_examined

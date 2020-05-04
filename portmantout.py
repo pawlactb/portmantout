@@ -1,5 +1,6 @@
+#!/usr/bin/python3
 from cs451.Node import Node
-from cs451.Search import BFS
+from cs451.Search import BFS, DFS
 from PortmantoutNode import PortmantoutNode
 import re
 
@@ -22,7 +23,7 @@ def split_word_into_syllables(word):
     #ex = r'([^aeiou]*[aeiou]*)|[aeiou]*[^aeiou]*[aeiou]*'
     ex = r'[^aeiou]*[aeiou]*[^aeiou]*|[aeiou]*[^aeiou]'
     ret_val = list(re.findall(ex, word))
-    return ret_val
+    return [ x for x in ret_val if x != '']
 
 
 def append_word_to_syllables(word, dict):
@@ -46,7 +47,8 @@ def main():
     PortmantoutNode.syllables = syllables
 
     root_node = PortmantoutNode(state='', name='root')
-    goal_node, nodes_examined = BFS(root_node, node_count_max=10)
+    # goal_node, nodes_examined = BFS(root_node, node_count_max=10000)
+    goal_node, nodes_examined = DFS(root_node, node_count_max=10000)
 
     print("Found Solution: %s (%s), after examining %d nodes." %
           (str(goal_node if goal_node else ""), str(goal_node.path if goal_node else ""), nodes_examined))
