@@ -112,7 +112,7 @@ class PortmantoutNode(Node):
         :rtype: Boolean
         """
 
-        if self.path.len()==1000:
+        if len(self.path)==1000:
             return True
         else:
             return False
@@ -144,7 +144,7 @@ class PortmantoutNode(Node):
         if not self.is_valid():
             return []
         kids = []
-        for word in words:
+        for word in list(PortmantoutNode.syllables.keys()):
             if not word in self.path:
                 kidPath = self.path
                 kidPath.append(word)
