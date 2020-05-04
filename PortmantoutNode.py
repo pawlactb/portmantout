@@ -140,7 +140,7 @@ class PortmantoutNode(Node):
             return False
 
         # Change this:
-        if self.path.len()==1000 and PortmantoutNode.is_portmanteau(self.path)[0]:
+        if len(self.path)==1000 and PortmantoutNode.is_portmanteau(self.path)[0]:
             return True
         else:
             return False
