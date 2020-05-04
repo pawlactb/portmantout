@@ -110,7 +110,10 @@ class PortmantoutNode(Node):
         :rtype: Boolean
         """
 
-        return False
+        if self.path.len()==1000:
+            return True
+        else:
+            return False
 
     # TODO: RH
     def goal_test(self):
@@ -123,7 +126,11 @@ class PortmantoutNode(Node):
             return False
 
         # Change this:
-        return False
+        if self.path.len()==1000 & is_portmanteau(self.path):
+            return True
+        else:
+            return False
+
 
     # TODO: AD
     def successors(self):
