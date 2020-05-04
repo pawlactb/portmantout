@@ -33,7 +33,7 @@ class PortmantoutNode(Node):
             if len(last_word_syllables) == 0:
                 # first iteration
                 last_word_syllables = PortmantoutNode.syllables[word]
-                # added_syllables.extend(last_word_syllables)
+                added_syllables.extend(last_word_syllables)
                 continue
             else:
                 current_word_syllables = PortmantoutNode.syllables[word]
@@ -47,9 +47,9 @@ class PortmantoutNode(Node):
                 
                 current_shared_index = current_word_syllables.index(syllables_shared[0])
                 last_shared_index = last_word_syllables.index(syllables_shared[0])
-                if current_shared_index == 0:
+                if current_shared_index == len(current_word_syllables)-1:
                     return False, None
-                if last_shared_index == len(last_word_syllables)-1:
+                if last_shared_index == 0:
                     return False, None
 
 
@@ -58,7 +58,7 @@ class PortmantoutNode(Node):
                 new_word_pos = current_word_syllables.index(
                     syllables_shared[0]) + 1
                 new_syllables = list()
-                new_syllables.extend(last_word_syllables[0:old_word_pos])
+                # new_syllables.extend(last_word_syllables[0:old_word_pos])
                 new_syllables.extend(
                     current_word_syllables[new_word_pos:])
                 added_syllables.extend(new_syllables)
