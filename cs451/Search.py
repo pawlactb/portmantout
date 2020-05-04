@@ -65,6 +65,7 @@ def BFS(root, node_count_max=None):
         nodes_examined += 1
         print("Examining Node #%d: %s" % (nodes_examined, node))
         for child in node.successors():
+            print("Child: %s" % (str(child)))
             node.register_child(child)
             fringe.put(child)
         if node.goal_test():

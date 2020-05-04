@@ -46,12 +46,13 @@ def main():
 
     PortmantoutNode.syllables = syllables
 
-    root_node = PortmantoutNode(state='', name='root')
+    # root_node = PortmantoutNode(state='', name='root')
+    root_node = PortmantoutNode(name='root')
     # goal_node, nodes_examined = BFS(root_node, node_count_max=10000)
     goal_node, nodes_examined = DFS(root_node, node_count_max=10000)
 
-    print("Found Solution: %s (%s), after examining %d nodes." %
-          (str(goal_node if goal_node else ""), str(goal_node.path if goal_node else ""), nodes_examined))
+    # print("Found Solution: %s (%s), after examining %d nodes." %
+        #   (str(goal_node if goal_node else ""), str(goal_node.path if goal_node else ""), nodes_examined))
 
 
 if __name__ == "__main__":

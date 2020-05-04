@@ -87,21 +87,20 @@ class PortmantoutNode(Node):
 
         # for i in range(len(words)-1):
             # max_gap = min([len(words[i]),len(words[i+1])])
-# 
+#
             # for gap in range(1,max_gap):
-# 
-                # # if last letter of current word equals first
-                # # letter of next word
-                # if words[i][-gap:] == words[i+1][0:gap]:
-                    # rendering += words[i+1][gap:]
+#
+            # # if last letter of current word equals first
+            # # letter of next word
+            # if words[i][-gap:] == words[i+1][0:gap]:
+            # rendering += words[i+1][gap:]
         # if rendering != words[0]:
             # rendered.append(rendering)
         # # return a list of all ways words can be jumbled together as a portmanteau.
         # return rendered
 
     def __init__(self, *args, **kwargs):
-        self.portmanteau = ''
-        Node.__init__(self, args, kwargs)
+        Node.__init__(self, *args, **kwargs)
 
     def __str__(self):
         _, to_render = PortmantoutNode.is_portmanteau(self.path)
@@ -119,7 +118,6 @@ class PortmantoutNode(Node):
         """
         return PortmantoutNode.is_portmanteau(self.path)[0]
 
-    # TODO: RH
     def is_complete(self):
         """Check if node is at a terminal depth in search.
 
@@ -127,12 +125,11 @@ class PortmantoutNode(Node):
         :rtype: Boolean
         """
 
-        if len(self.path)==1000:
+        if len(self.path) == 1000:
             return True
         else:
             return False
 
-    # TODO: RH
     def goal_test(self):
         """Check if the node met the goal requirements.
 
@@ -148,8 +145,6 @@ class PortmantoutNode(Node):
         else:
             return False
 
-
-    # TODO: AD
     def successors(self):
         """This function should return a list of PortmantoutNode s each with one of the remaining words appended to the successor's path.
 
@@ -159,6 +154,7 @@ class PortmantoutNode(Node):
         if not self.is_valid():
             return []
         kids = []
+        kidPath = []
         for word in list(PortmantoutNode.syllables.keys()):
             if not word in self.path:
                 kidPath = deepcopy(self.path)
