@@ -115,6 +115,7 @@ class PortmantoutNode(Node):
         else:
             return False
 
+
     # TODO: AD
     def successors(self):
         """This function should return a list of PortmantoutNode s each with one of the remaining words appended to the successor's path.
