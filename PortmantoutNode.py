@@ -1,8 +1,16 @@
 from cs451.Node import Node
+from cs451.Search import DFS
 import re
 from copy import deepcopy
+from random import shuffle
+from threading import Lock
+import concurrent.futures
+import traceback
 
-class PortmantoutNode(Node):
+
+class PortmanteauNode(Node):
+    """A PortmanteauNode is a portmanteau of specified word length.
+    """
     syllables = {}
 
     @staticmethod
@@ -14,8 +22,7 @@ class PortmantoutNode(Node):
         :return: List of syllables
         :rtype: [str]
         """
-        return PortmantoutNode.syllables[word]
-
+        return PortmanteauNode.syllables[word]
 
     @staticmethod
     def is_portmanteau(words):
@@ -26,17 +33,20 @@ class PortmantoutNode(Node):
         :return: True iff portmanteau exists along words, False otherwise.
         :rtype: Boolean
         """
+        if len(words) == 0:
+            return False, None
+
         added_syllables = []
         current_word_syllables = []
         last_word_syllables = []
         for word in words:
             if len(last_word_syllables) == 0:
                 # first iteration
-                last_word_syllables = PortmantoutNode.syllables[word]
+                last_word_syllables = PortmanteauNode.syllables[word]
                 added_syllables.extend(last_word_syllables)
                 continue
             else:
-                current_word_syllables = PortmantoutNode.syllables[word]
+                current_word_syllables = PortmanteauNode.syllables[word]
 
                 # syllables shared between last word and current word
                 syllables_shared = [
@@ -44,17 +54,18 @@ class PortmantoutNode(Node):
                 if len(syllables_shared) == 0:
                     # if no syllables are shared, then we can say a portmanteau doesn't exist
                     return False, None
-                
-                current_shared_index = current_word_syllables.index(syllables_shared[0])
-                last_shared_index = last_word_syllables.index(syllables_shared[0])
+
+                current_shared_index = current_word_syllables.index(
+                    syllables_shared[0])
+                last_shared_index = last_word_syllables.index(
+                    syllables_shared[0])
                 if current_shared_index == len(current_word_syllables)-1:
                     return False, None
                 if last_shared_index == 0:
                     return False, None
 
-
-                old_word_pos = last_word_syllables.index(
-                    syllables_shared[0]) + 1
+                # old_word_pos = last_word_syllables.index(
+                #     syllables_shared[0]) + 1
                 new_word_pos = current_word_syllables.index(
                     syllables_shared[0]) + 1
                 new_syllables = list()
@@ -74,36 +85,17 @@ class PortmantoutNode(Node):
          :return: The rendered portmanteaus.
          :rtype: [str]
          """
-        good, to_render = PortmantoutNode.is_portmanteau(words)
+        good, to_render = PortmanteauNode.is_portmanteau(words)
         if good:
             return "".join(to_render)
         else:
             return None
 
-        # rendered = []
-
-        # starting with one letter overlap
-        # rendering = words[0]
-
-        # for i in range(len(words)-1):
-            # max_gap = min([len(words[i]),len(words[i+1])])
-#
-            # for gap in range(1,max_gap):
-#
-            # # if last letter of current word equals first
-            # # letter of next word
-            # if words[i][-gap:] == words[i+1][0:gap]:
-            # rendering += words[i+1][gap:]
-        # if rendering != words[0]:
-            # rendered.append(rendering)
-        # # return a list of all ways words can be jumbled together as a portmanteau.
-        # return rendered
-
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
 
     def __str__(self):
-        _, to_render = PortmantoutNode.is_portmanteau(self.path)
+        _, to_render = PortmanteauNode.is_portmanteau(self.path)
         if _ == True:
             return "%s (%d words) %s" % ("".join(to_render), len(self.path), str(self.path))
         else:
@@ -116,7 +108,10 @@ class PortmantoutNode(Node):
         :return: True iff self.path can be a portmanteau, False otherwise.
         :rtype: Boolean
         """
-        return PortmantoutNode.is_portmanteau(self.path)[0]
+        if len(self.path) == 0:
+            return True
+        else:
+            return PortmanteauNode.is_portmanteau(self.path)
 
     def is_complete(self):
         """Check if node is at a terminal depth in search.
@@ -125,7 +120,7 @@ class PortmantoutNode(Node):
         :rtype: Boolean
         """
 
-        if len(self.path) == 1000:
+        if len(self.path) >= 4:
             return True
         else:
             return False
@@ -136,11 +131,7 @@ class PortmantoutNode(Node):
         :return: True iff node is at terminal depth, and node meets goal requirements.
         :rtype: Boolean
         """
-        if not self.is_complete():
-            return False
-
-        # Change this:
-        if len(self.path)==1000 and PortmantoutNode.is_portmanteau(self.path)[0]:
+        if self.is_valid() and self.is_complete():
             return True
         else:
             return False
@@ -153,18 +144,18 @@ class PortmantoutNode(Node):
         """
         if not self.is_valid():
             return []
-        kids = []
-        kidPath = []
-        for word in list(PortmantoutNode.syllables.keys()):
+        successors = []
+        child_path = []
+        words_left = list(PortmanteauNode.syllables.keys())
+        shuffle(words_left)
+        for word in words_left:
             if not word in self.path:
-                kidPath = deepcopy(self.path)
-                kidPath.append(word)
-                kid = PortmantoutNode(path=kidPath,parent=self)
-                kid.path = deepcopy(kidPath)
-                if PortmantoutNode.is_portmanteau(kidPath)[0]:
-                    kids.append(kid)
+                child_path = deepcopy(self.path)
+                child_path.append(word)
+                kid = PortmanteauNode(path=child_path, parent=self)
+                successors.append(kid)
 
-        return kids
+        return successors
 
     def cost(self):
         """Return the number of words added to the PortmantoutNode.
@@ -173,6 +164,7 @@ class PortmantoutNode(Node):
         :rtype: int
         """
         return len(self.path)
+
 
 def read_word_list(path, ignoreRegExp=None):
     words = []
@@ -210,3 +202,66 @@ def load_syllables(path):
         append_word_to_syllables(
             word, syllables)
     return syllables
+
+
+class PortmanteauNodeGenerator(object):
+    def __init__(self, syllables, portmanteau_length=4):
+        self.syllables = syllables
+        self._mapping = dict()
+        self._state_lock = Lock()
+
+    def add_portmanteau(self, portmantaeu_node):
+        start_syllable = PortmanteauNode.get_syllables(
+            portmantaeu_node.path[0])
+        end_syllable = PortmanteauNode.get_syllables(
+            portmantaeu_node.path[-1])
+        with self._state_lock:
+            if (start_syllable, end_syllable) in self._mapping.keys():
+                self._mapping[(start_syllable, end_syllable)
+                              ].append(portmantaeu_node)
+            else:
+                self._mapping[(start_syllable, end_syllable)
+                              ] = list()
+                self._mapping[(start_syllable, end_syllable)
+                              ].append(portmantaeu_node)
+
+            for word in portmantaeu_node.path:
+                del self.syllables[word]
+
+    def get_portmanteau(self, start_syllable, end_syllable):
+        portmanteau_node = None
+        if (start_syllable, end_syllable) in self._mapping.keys():
+            with self._state_lock:
+                portmanteau_node = self._mapping[(
+                    start_syllable, end_syllable)].pop()
+            return portmanteau_node
+        else:
+            return None
+
+    def generate(self, num_searches=1):
+        nodes = []
+        for _ in range(num_searches):
+            nodes.append(PortmanteauNode())
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            future_to_node = {executor.submit(
+                DFS, node, 1000): node for node in nodes}
+            for future in concurrent.futures.as_completed(future_to_node):
+                node = future_to_node[future]
+                try:
+                    print(node.path)
+                    # self.add_portmanteau(node)
+                except Exception as exc:
+                    tb = traceback.format_exc(exc)
+                    print(tb)
+
+    def __len__(self):
+        length = 0
+        for _, val in self._mapping.values():
+            length += len(val)
+        return length
+
+
+class PortmantoutNode(Node):
+    def __init__(self, *args, **kwargs):
+        Node.__init__(self, *args, **kwargs)

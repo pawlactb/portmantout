@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 from cs451.Node import Node
 from cs451.Search import BFS, DFS
-from PortmantoutNode import PortmantoutNode
+from PortmantoutNode import PortmanteauNode, PortmanteauNodeGenerator
 import re
 
 
@@ -23,7 +23,7 @@ def split_word_into_syllables(word):
     #ex = r'([^aeiou]*[aeiou]*)|[aeiou]*[^aeiou]*[aeiou]*'
     ex = r'[^aeiou]*[aeiou]*[^aeiou]*|[aeiou]*[^aeiou]'
     ret_val = list(re.findall(ex, word))
-    return [ x for x in ret_val if x != '']
+    return [x for x in ret_val if x != '']
 
 
 def append_word_to_syllables(word, dict):
@@ -44,15 +44,20 @@ def main():
     word_file = './american-english'
     syllables = load_syllables(word_file)
 
-    PortmantoutNode.syllables = syllables
+    PortmanteauNode.syllables = syllables
 
-    # root_node = PortmantoutNode(state='', name='root')
-    root_node = PortmantoutNode(name='root')
-    # goal_node, nodes_examined = BFS(root_node, node_count_max=10000)
-    goal_node, nodes_examined = DFS(root_node, node_count_max=10000)
+    png = PortmanteauNodeGenerator(syllables)
+
+    png.generate(num_searches=5)
+
+    print(len(png))
+
+    # root_node = PortmanteauNode(name='root')
+
+    # goal_node, nodes_examined = DFS(root_node, node_count_max=1000)
 
     # print("Found Solution: %s (%s), after examining %d nodes." %
-        #   (str(goal_node if goal_node else ""), str(goal_node.path if goal_node else ""), nodes_examined))
+    #       (str(goal_node), str(goal_node.path if goal_node else ""), nodes_examined))
 
 
 if __name__ == "__main__":

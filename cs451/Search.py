@@ -1,5 +1,5 @@
 from queue import PriorityQueue, Queue, LifoQueue
-
+from copy import deepcopy
 from .Node import expand_node
 
 
@@ -63,9 +63,9 @@ def BFS(root, node_count_max=None):
     while not fringe.empty() and nodes_examined < node_count_max:
         node = fringe.get()
         nodes_examined += 1
-        print("Examining Node #%d: %s" % (nodes_examined, node))
+        # print("Examining Node #%d: %s" % (nodes_examined, node))
         for child in node.successors():
-            print("Child: %s" % (str(child)))
+            # print("Child: %s" % (str(child)))
             node.register_child(child)
             fringe.put(child)
         if node.goal_test():
@@ -93,10 +93,11 @@ def DFS(root, node_count_max=None):
     while not fringe.empty() and nodes_examined < node_count_max:
         node = fringe.get()
         nodes_examined += 1
-        print("Examining Node #%d: %s" % (nodes_examined, node))
+        # print("Examining Node #%d: %s" % (nodes_examined, node))
         for child in node.successors():
             node.register_child(child)
             fringe.put(child)
         if node.goal_test():
             return node, nodes_examined
+
     return None, nodes_examined
