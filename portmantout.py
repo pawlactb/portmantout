@@ -48,14 +48,9 @@ def main():
 
     PortmanteauNode.syllables = syllables
 
-    # png = PortmanteauNodeGenerator(syllables, subproblem_size=2)
+    root = PortmantoutNode(max_subnodes=750, subproblem_size=2)
 
-    # png.generate(num_searches=16)
-
-    # print(len(png))
-    root = PortmantoutNode(max_subnodes=800, subproblem_size=2)
-
-    print(BFS(root, 300))
+    print(DFS(root, 300))
 
 
 if __name__ == "__main__":

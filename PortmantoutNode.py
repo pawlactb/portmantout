@@ -104,7 +104,7 @@ class PortmanteauNode(Node):
         if _ == True:
             return "%s (%d words) %s" % ("".join(to_render), len(self.path), str(self.path))
         else:
-            return "BAD PORTMANTOUT (%d depth) " % (len(self.path))
+            return "BAD PORTMANTOUT (%d depth) %s" % (len(self.path), str(self.path))
 
     def is_valid(self):
         """Check if a valid portmantaeu is made from the words in self.path.
@@ -220,7 +220,8 @@ class PortmanteauNodeGenerator(object):
         self.max_subnodes = max_subnodes
 
     def available_mappings(self):
-        return list(self._mapping.keys())
+        with self._state_lock:
+            return list(self._mapping.keys())
 
     def add_portmanteau(self, portmanteau_node):
         portmanteau_list = portmanteau_node.path
@@ -269,11 +270,13 @@ class PortmanteauNodeGenerator(object):
                         node, _ = result
                         if node is not None:
                             self.add_portmanteau(node)
-                        print(node)
+                            print("Stored Portmanteaus: %s" %
+                                  (str(self.available_mappings())))
+                        # print(node)
                     except Exception as exc:
                         tb = traceback.format_exc(exc)
                         print(tb)
-                sleep(5)
+            sleep(2)
 
     def __len__(self):
         length = 0
@@ -294,19 +297,18 @@ class PortmantoutNode(Node):
             self.generator.generate, ())
 
     def __str__(self):
-        words = [].extend([node.path for node in self.path])
+        words = []
+        for node in self.path:
+            words.extend(node.path)
         return PortmanteauNode(path=words).__str__()
 
     def is_valid(self):
-        if len(self.path) <= 1:
+        words = []
+        for node in self.path:
+            words.extend(node.path)
+        if len(words) == 0:
             return True
-
-        consecutive_nodes = [(self.path[x], self.path[x+1])
-                             for x in range(0, len(self.path)-1)]
-        for (x, y) in consecutive_nodes:
-            if PortmanteauNode.get_syllables(x.path[-1])[-1] != PortmanteauNode.get_syllables(y.path[0])[0]:
-                return False
-        return True
+        return PortmanteauNode.is_portmanteau(words)[0]
 
     def is_complete(self):
         if len(self.path) >= 2:
@@ -326,7 +328,7 @@ class PortmantoutNode(Node):
             return successors
 
         while len(self.generator.available_mappings()) == 0:
-            sleep(5)
+            sleep(.1)
 
         for val in self.generator.available_mappings():
             succ_path = deepcopy(self.path)
@@ -334,4 +336,6 @@ class PortmantoutNode(Node):
                 deepcopy(self.generator.get_portmanteau(val[0], val[1])))
             successors.append(PortmantoutNode(
                 path=succ_path, max_subnodes=self.max_subnodes, subproblem_size=self.subproblem_size))
+            for succ in successors:
+                print(succ.path)
         return successors

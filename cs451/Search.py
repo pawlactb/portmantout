@@ -61,15 +61,17 @@ def BFS(root, node_count_max=None):
 
     # in BFS, we treat the fringe as a FIFO queue
     while not fringe.empty() and nodes_examined < node_count_max:
-        node = fringe.get()
+        n = fringe.get()
         nodes_examined += 1
-        print("Examining Node #%d: %s" % (nodes_examined, node))
-        for child in node.successors():
-            # print("Child: %s" % (str(child)))
-            node.register_child(child)
+        print("Examining Node #%d: %s" % (nodes_examined, n))
+        if n.goal_test():
+            return n, nodes_examined
+        if n.is_complete() or not n.is_valid():
+            continue
+        for child in n.successors():
+            n.register_child(child)
             fringe.put(child)
-        if node.goal_test():
-            return node, nodes_examined
+
     return None, nodes_examined
 
 
