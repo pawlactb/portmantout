@@ -43,11 +43,16 @@ class PortmanteauNode(Node):
         added_syllables = []
         current_word_syllables = []
         last_word_syllables = []
+        first = True
+        second = False
         for word in words:
-            if len(last_word_syllables) == 0:
+            if first:
                 # first iteration
                 last_word_syllables = PortmanteauNode.syllables[word]
-                added_syllables.extend(last_word_syllables)
+                #added_syllables.extend(last_word_syllables)
+                if first:
+                    first = False
+                    second = True
                 continue
             else:
                 current_word_syllables = PortmanteauNode.syllables[word]
@@ -68,17 +73,22 @@ class PortmanteauNode(Node):
                 if last_shared_index == 0:
                     return False, None
 
-                # old_word_pos = last_word_syllables.index(
-                #     syllables_shared[0]) + 1
+                old_word_pos = last_word_syllables.index(
+                    syllables_shared[0]) + 1
                 new_word_pos = current_word_syllables.index(
                     syllables_shared[0]) + 1
                 new_syllables = list()
                 # new_syllables.extend(last_word_syllables[0:old_word_pos])
+                if second:
+                    new_syllables.extend(last_word_syllables[0:old_word_pos])
                 new_syllables.extend(
                     current_word_syllables[new_word_pos:])
                 added_syllables.extend(new_syllables)
-                last_word_syllables = current_word_syllables[current_word_syllables.index(
-                    syllables_shared[0]):]
+                last_word_syllables = current_word_syllables[(current_word_syllables.index(
+                    syllables_shared[0])+1):]
+                if second:
+                    second = False
+  
         # if we make it here, we had no issues adding all the words.
         return True, added_syllables
 
