@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 from cs451.Node import Node
 from cs451.Search import BFS, DFS
-from PortmantoutNode import PortmanteauNode, PortmanteauNodeGenerator
+from PortmantoutNode import PortmanteauNode, PortmanteauNodeGenerator, PortmantoutNode
 import re
+import concurrent.futures
+import traceback
 
 
 def read_word_list(path, ignoreRegExp=None):
@@ -46,18 +48,14 @@ def main():
 
     PortmanteauNode.syllables = syllables
 
-    png = PortmanteauNodeGenerator(syllables)
+    # png = PortmanteauNodeGenerator(syllables, subproblem_size=2)
 
-    png.generate(num_searches=5)
+    # png.generate(num_searches=16)
 
-    print(len(png))
+    # print(len(png))
+    root = PortmantoutNode(max_subnodes=800, subproblem_size=2)
 
-    # root_node = PortmanteauNode(name='root')
-
-    # goal_node, nodes_examined = DFS(root_node, node_count_max=1000)
-
-    # print("Found Solution: %s (%s), after examining %d nodes." %
-    #       (str(goal_node), str(goal_node.path if goal_node else ""), nodes_examined))
+    print(BFS(root, 300))
 
 
 if __name__ == "__main__":

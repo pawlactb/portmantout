@@ -4,8 +4,12 @@ import re
 from copy import deepcopy
 from random import shuffle
 from threading import Lock
+from _thread import start_new_thread
 import concurrent.futures
 import traceback
+from collections import namedtuple
+from time import sleep
+from random import randint
 
 
 class PortmanteauNode(Node):
@@ -91,8 +95,9 @@ class PortmanteauNode(Node):
         else:
             return None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, depth_goal=2, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
+        self.depth_goal = depth_goal
 
     def __str__(self):
         _, to_render = PortmanteauNode.is_portmanteau(self.path)
@@ -111,7 +116,7 @@ class PortmanteauNode(Node):
         if len(self.path) == 0:
             return True
         else:
-            return PortmanteauNode.is_portmanteau(self.path)
+            return PortmanteauNode.is_portmanteau(self.path)[0]
 
     def is_complete(self):
         """Check if node is at a terminal depth in search.
@@ -120,7 +125,7 @@ class PortmanteauNode(Node):
         :rtype: Boolean
         """
 
-        if len(self.path) >= 4:
+        if len(self.path) >= self.depth_goal:
             return True
         else:
             return False
@@ -152,7 +157,8 @@ class PortmanteauNode(Node):
             if not word in self.path:
                 child_path = deepcopy(self.path)
                 child_path.append(word)
-                kid = PortmanteauNode(path=child_path, parent=self)
+                kid = PortmanteauNode(
+                    path=child_path, parent=self, depth_goal=self.depth_goal)
                 successors.append(kid)
 
         return successors
@@ -196,7 +202,7 @@ def append_word_to_syllables(word, dict):
 def load_syllables(path):
     # read words, ignore words with ' (possessives)
     words = read_word_list(path, ignoreRegExp=r""".*["'].*""")
-    #words = read_word_list_no_proper_nouns(path, ignoreRegExp=r""".*["'].*""")
+    # words = read_word_list_no_proper_nouns(path, ignoreRegExp=r""".*["'].*""")
     syllables = {}
     for word in words:
         append_word_to_syllables(
@@ -205,63 +211,127 @@ def load_syllables(path):
 
 
 class PortmanteauNodeGenerator(object):
-    def __init__(self, syllables, portmanteau_length=4):
+    def __init__(self, syllables, subproblem_size=4, max_subnodes=1000):
         self.syllables = syllables
         self._mapping = dict()
+        self.portmanteaus = []
         self._state_lock = Lock()
+        self.subproblem_size = subproblem_size
+        self.max_subnodes = max_subnodes
 
-    def add_portmanteau(self, portmantaeu_node):
-        start_syllable = PortmanteauNode.get_syllables(
-            portmantaeu_node.path[0])
-        end_syllable = PortmanteauNode.get_syllables(
-            portmantaeu_node.path[-1])
+    def available_mappings(self):
+        return list(self._mapping.keys())
+
+    def add_portmanteau(self, portmanteau_node):
+        portmanteau_list = portmanteau_node.path
+        start_syllable = PortmanteauNode.get_syllables(portmanteau_list[0])[0]
+        end_syllable = PortmanteauNode.get_syllables(portmanteau_list[-1])[-1]
+        Start_Stop = namedtuple("Start_Stop", ["start", "stop"])
+        key = Start_Stop(start=start_syllable, stop=end_syllable)
         with self._state_lock:
-            if (start_syllable, end_syllable) in self._mapping.keys():
-                self._mapping[(start_syllable, end_syllable)
-                              ].append(portmantaeu_node)
+            self.portmanteaus.append(portmanteau_node)
+            if key in self._mapping.keys():
+                self._mapping[key].append(portmanteau_node)
+                self.portmanteaus.append(portmanteau_node)
             else:
-                self._mapping[(start_syllable, end_syllable)
-                              ] = list()
-                self._mapping[(start_syllable, end_syllable)
-                              ].append(portmantaeu_node)
+                self._mapping[key] = list()
+                self._mapping[key].append(portmanteau_node)
+                self.portmanteaus.append(portmanteau_node)
 
-            for word in portmantaeu_node.path:
-                del self.syllables[word]
+            # for word in portmanteau_list:
+            #     del self.syllables[word]
 
     def get_portmanteau(self, start_syllable, end_syllable):
         portmanteau_node = None
-        if (start_syllable, end_syllable) in self._mapping.keys():
-            with self._state_lock:
-                portmanteau_node = self._mapping[(
-                    start_syllable, end_syllable)].pop()
+        Start_Stop = namedtuple("Start_Stop", ["start", "stop"])
+        key = Start_Stop(start=start_syllable, stop=end_syllable)
+        if key in self._mapping.keys():
+            # with self._state_lock:
+            portmanteau_node = self._mapping[key][randint(
+                0, len(self._mapping[key])-1)]
             return portmanteau_node
         else:
             return None
 
-    def generate(self, num_searches=1):
-        nodes = []
-        for _ in range(num_searches):
-            nodes.append(PortmanteauNode())
+    def generate(self, num_searches=4):
+        while True:
+            nodes = []
+            for i in range(num_searches):
+                nodes.append(PortmanteauNode(
+                    name='root'+str(i), depth_goal=self.subproblem_size))
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            future_to_node = {executor.submit(
-                DFS, node, 1000): node for node in nodes}
-            for future in concurrent.futures.as_completed(future_to_node):
-                node = future_to_node[future]
-                try:
-                    print(node.path)
-                    # self.add_portmanteau(node)
-                except Exception as exc:
-                    tb = traceback.format_exc(exc)
-                    print(tb)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+                future_to_node = {executor.submit(
+                    DFS, node, self.max_subnodes): node for node in nodes}
+                for future in concurrent.futures.as_completed(future_to_node):
+                    try:
+                        result = future.result()
+                        node, _ = result
+                        if node is not None:
+                            self.add_portmanteau(node)
+                        print(node)
+                    except Exception as exc:
+                        tb = traceback.format_exc(exc)
+                        print(tb)
+                sleep(5)
 
     def __len__(self):
         length = 0
-        for _, val in self._mapping.values():
+        for val in self._mapping.values():
             length += len(val)
         return length
 
 
 class PortmantoutNode(Node):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, subproblem_size=4, max_subnodes=1000, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
+        self.subproblem_size = subproblem_size
+        self.max_subnodes = 1000
+        self.generator = PortmanteauNodeGenerator(
+            syllables=PortmanteauNode.syllables, subproblem_size=self.subproblem_size)
+        # self.generator.generate(num_searches=16)
+        self._generator_thread = start_new_thread(
+            self.generator.generate, ())
+
+    def __str__(self):
+        words = [].extend([node.path for node in self.path])
+        return PortmanteauNode(path=words).__str__()
+
+    def is_valid(self):
+        if len(self.path) <= 1:
+            return True
+
+        consecutive_nodes = [(self.path[x], self.path[x+1])
+                             for x in range(0, len(self.path)-1)]
+        for (x, y) in consecutive_nodes:
+            if PortmanteauNode.get_syllables(x.path[-1])[-1] != PortmanteauNode.get_syllables(y.path[0])[0]:
+                return False
+        return True
+
+    def is_complete(self):
+        if len(self.path) >= 2:
+            return True
+        else:
+            return False
+
+    def goal_test(self):
+        if self.is_valid() and self.is_complete():
+            return True
+        else:
+            return False
+
+    def successors(self):
+        successors = list()
+        if not self.is_valid():
+            return successors
+
+        while len(self.generator.available_mappings()) == 0:
+            sleep(5)
+
+        for val in self.generator.available_mappings():
+            succ_path = deepcopy(self.path)
+            succ_path.append(
+                deepcopy(self.generator.get_portmanteau(val[0], val[1])))
+            successors.append(PortmantoutNode(
+                path=succ_path, max_subnodes=self.max_subnodes, subproblem_size=self.subproblem_size))
+        return successors
